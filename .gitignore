@@ -1,0 +1,122 @@
+# ========================================
+# 🔹 Node.js & Express (Backend)
+# ========================================
+backend/node_modules/
+backend/.env
+backend/.env.local
+backend/.DS_Store
+backend/dist/
+backend/build/
+backend/coverage/
+backend/package-lock.json
+
+# Logs
+backend/logs
+backend/*.log
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+
+# Temporary files
+backend/tmp/
+backend/.cache/
+backend/.vscode/
+backend/.idea/
+
+# ========================================
+# 🔹 React / Vite (Frontend)
+# ========================================
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/.DS_Store
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+frontend/package-lock.json
+
+# Logs
+frontend/logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Temporary files
+frontend/tmp/
+frontend/.cache/
+frontend/.vscode/
+frontend/.idea/
+
+# ========================================
+# 🔹 Global (Applies to both)
+# ========================================
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+*.swp
+
+# ========================================
+# 🔹 Docker / DevOps
+# ========================================
+# Docker artifacts
+**/docker-compose.override.yml
+**/Dockerfile.local
+**/docker-compose.yml
+**/.docker/
+**/.dockerignore
+
+# ========================================
+# 🔹 AI & Cache Files
+# ========================================
+# Redis data dumps
+dump.rdb
+*.rdb
+*.aof
+
+# Temporary AI-generated data
+ai_temp/
+cache/
+__pycache__/
+
+# ========================================
+# 🔹 Optional - Misc
+# ========================================
+# Build artifacts and test outputs
+*.out
+*.pid
+*.seed
+*.tgz
+*.gz
+*.zip
+
+# Coverage directories used by testing tools
+coverage/
+.nyc_output/
+
+# ========================================
+# ✅ End of File
+# ========================================
