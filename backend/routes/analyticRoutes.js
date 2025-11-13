@@ -1,7 +1,7 @@
 // routes/analyticsRoutes.js
 import express from "express";
-import { getTaskStats } from "../controllers/analyticsController.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { getTaskStats } from "../controllers/analyticsControllers.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

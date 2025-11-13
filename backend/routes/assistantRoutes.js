@@ -1,7 +1,7 @@
 // routes/assistantRoutes.js
 import express from "express";
-import { chatWithAssistant } from "../controllers/assistantController.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { chatWithAssistant } from "../controllers/assistantControllers.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

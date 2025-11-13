@@ -9,11 +9,11 @@ import { connectRedis } from "./config/redis.js";
 // Routes
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
-import analyticsRoutes from "./routes/analyticsRoutes.js";
+import analyticsRoutes from "./routes/analyticRoutes.js";
 import assistantRoutes from "./routes/assistantRoutes.js";
 
 // Middleware
-import { errorHandler } from "./middlewares/errorHandler.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 // Load environment variables
 dotenv.config();
@@ -24,7 +24,7 @@ const app = express();
 // Middleware setup
 app.use(cors());
 app.use(express.json());
-app.use(morgan("dev"));
+
 
 // Connect to MongoDB
 connectDB();

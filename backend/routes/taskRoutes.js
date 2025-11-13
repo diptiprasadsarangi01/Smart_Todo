@@ -5,8 +5,8 @@ import {
   getTodayTasks,
   updateTask,
   deleteTask,
-} from "../controllers/taskController.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+} from "../controllers/taskControllers.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
