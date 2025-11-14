@@ -9,10 +9,32 @@ export const addTask = async (req, res, next) => {
   try {
     const { title, summary, dueDate, priority } = req.body;
 
+    // -------------------------------
+    // ⭐ Validate Due Date (Backend Security)
+    // -------------------------------
+    if (!dueDate) {
+      return res.status(400).json({ message: "Due date is required" });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const selectedDate = new Date(dueDate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      return res.status(400).json({
+        message: "Due date cannot be in the past",
+      });
+    }
+
+    // -------------------------------
+    // Create Task
+    // -------------------------------
     const newTask = new Task({
       createdBy: req.user.id, // FIXED
       title,
-      description: summary, // Your schema uses "description"
+      description: summary,
       dueDate,
       priority,
     });

@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -9,7 +8,7 @@ import { connectRedis } from "./config/redis.js";
 // Routes
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
-import analyticsRoutes from "./routes/analyticRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";  // ✅ FIXED IMPORT
 import assistantRoutes from "./routes/assistantRoutes.js";
 
 // Middleware
@@ -22,20 +21,27 @@ dotenv.config();
 const app = express();
 
 // Middleware setup
+console.log(" Middleware1...");
 app.use(cors());
+
+console.log(" Middleware2...");
 app.use(express.json());
 
+// console.log(" Morgan Logger...");
+// app.use(morgan("dev"));   // optional but very useful for debugging
 
 // Connect to MongoDB
+console.log(" MongoDB connecting...");
 connectDB();
 
 // Connect to Redis
+console.log(" Redis connecting...");
 connectRedis();
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use("/api/analytics", analyticsRoutes);
+app.use("/api/analytics", analyticsRoutes); // ✅ Now correct
 app.use("/api/assistant", assistantRoutes);
 
 // Root test route

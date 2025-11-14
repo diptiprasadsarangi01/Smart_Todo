@@ -1,19 +1,16 @@
-// controllers/analyticsController.js
 import Task from "../models/Task.js";
 
 export const getTaskStats = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // from verifyToken
 
-    const completed = await Task.countDocuments({ userId, completed: true });
-    const pending = await Task.countDocuments({ userId, completed: false });
+    const total = await Task.countDocuments({ createdBy: userId });
+    const completed = await Task.countDocuments({ createdBy: userId, status: "completed" });
+    const pending = await Task.countDocuments({ createdBy: userId, status: "pending" });
 
-    res.status(200).json({
-      completed,
-      pending,
-      total: completed + pending,
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching analytics", error: err.message });
+    res.status(200).json({ total, completed, pending });
+  } catch (error) {
+    console.error("Analytics Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

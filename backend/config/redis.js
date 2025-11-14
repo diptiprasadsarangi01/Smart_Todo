@@ -1,22 +1,30 @@
 import { createClient } from "redis";
 
-const redisClient = createClient({
-  socket: {
-    host: process.env.REDIS_HOST || "127.0.0.1",
-    port: process.env.REDIS_PORT || 6379,
-  },
-  password: process.env.REDIS_PASSWORD || undefined,
-});
+let redisClient;
 
-redisClient.on("connect", () => {
-  console.log("✅ Redis connected successfully");
-});
+export const connectRedis = async () => {
+  try {
+    redisClient = createClient({
+      socket: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+      },
+      password: process.env.REDIS_PASSWORD
+    });
 
-redisClient.on("error", (err) => {
-  console.error("❌ Redis connection error:", err);
-});
+    redisClient.on("connect", () =>
+      console.log("Redis Connected Successfully")
+    );
 
-// Connect asynchronously
-await redisClient.connect();
+    redisClient.on("error", (err) =>
+      console.error("Redis Error:", err)
+    );
 
+    await redisClient.connect();
+  } catch (err) {
+    console.error("Redis Connection Failed:", err);
+  }
+};
+
+// ✅ Default export so you can import redisClient directly
 export default redisClient;
