@@ -1,14 +1,19 @@
+// src/api/axios.js
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",  
+const baseURL = import.meta.env.VITE_API_URL + "/api";
+
+const api = axios.create({
+  baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Attach token automatically
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
-  if (token) req.headers.Authorization = `Bearer ${token}`;
-  return req;
-});
+// Attach token dynamically
+api.attachAuth = (token) => {
+  if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  else delete api.defaults.headers.common["Authorization"];
+};
 
-export default API;
+export default api;

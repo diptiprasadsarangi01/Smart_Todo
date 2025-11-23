@@ -76,10 +76,19 @@ export const getTodayTasks = async (req, res, next) => {
 // ------------------------
 export const updateTask = async (req, res, next) => {
   try {
-    // Ownership + update
+    const { title, description, priority, dueDate, status } = req.body;
+
+    // Build allowed update fields safely
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (priority !== undefined) updateData.priority = priority;
+    if (dueDate !== undefined) updateData.dueDate = dueDate;
+    if (status !== undefined) updateData.status = status;
+
     const updatedTask = await Task.findOneAndUpdate(
-      { _id: req.params.id, createdBy: req.user.id }, // FIXED SECURITY
-      req.body,
+      { _id: req.params.id, createdBy: req.user.id }, // security check
+      updateData,
       { new: true }
     );
 
