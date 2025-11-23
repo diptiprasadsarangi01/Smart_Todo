@@ -2,7 +2,16 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import axios from "axios";
 
+// Create JWT
+const generateToken = (user) =>
+  jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+
+// -----------------------------------------
+// 📌 NORMAL SIGNUP
+// -----------------------------------------
 export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -21,6 +30,10 @@ export const signup = async (req, res) => {
   }
 };
 
+
+// -----------------------------------------
+// 📌 NORMAL LOGIN
+// -----------------------------------------
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -33,9 +46,7 @@ export const login = async (req, res) => {
     if (!isPasswordValid)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = generateToken(user);
 
     res.status(200).json({ message: "Login successful", token });
   } catch (err) {
