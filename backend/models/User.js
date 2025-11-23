@@ -4,7 +4,6 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
       trim: true,
     },
 
@@ -19,10 +18,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       minlength: 6,
-      required: function () {
-        // password is required only when user signs up normally
-        return !this.googleId && !this.linkedinId;
-      },
     },
 
     googleId: {
@@ -30,10 +25,21 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-
     profilePic: {
       type: String,
       default: "",
+    },
+
+    // 🔵 Required for OTP verification
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationCode: {
+      type: String,
+    },
+    verificationCodeExpires: {
+      type: Date,
     },
   },
   { timestamps: true }
