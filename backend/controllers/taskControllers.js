@@ -121,3 +121,48 @@ export const deleteTask = async (req, res, next) => {
     next(err);
   }
 };
+
+
+// ------------------------
+// Get Current Week Tasks (Mon–Sun)
+// ------------------------
+export const getWeekTasks = async (req, res, next) => {
+  try {
+    const now = new Date();
+
+    // Start of week (Monday)
+    const startOfWeek = new Date(now);
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // End of week (Sunday)
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const tasks = await Task.find({
+      createdBy: req.user.id,
+      dueDate: { $gte: startOfWeek, $lte: endOfWeek },
+    }).sort({ dueDate: 1 });
+
+    // Group by weekday
+    const weekData = {};
+
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    days.forEach((d) => (weekData[d] = []));
+
+    tasks.forEach((task) => {
+      const taskDay = new Date(task.dueDate);
+      const weekday = days[(taskDay.getDay() + 6) % 7]; // convert Sun=0 → 6
+
+      weekData[weekday].push(task);
+    });
+
+    res.status(200).json(weekData);
+  } catch (err) {
+    next(err);
+  }
+};

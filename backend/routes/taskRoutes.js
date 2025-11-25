@@ -5,6 +5,7 @@ import {
   getTodayTasks,
   updateTask,
   deleteTask,
+  getWeekTasks,
 } from "../controllers/taskControllers.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -21,5 +22,8 @@ router.put("/:id", verifyToken, updateTask);
 
 // Delete task by ID
 router.delete("/:id", verifyToken, deleteTask);
+
+
+router.get("/week", verifyToken, getWeekTasks);
 
 export default router;
