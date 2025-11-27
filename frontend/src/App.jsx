@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import WeekView from './pages/WeekView';
 import Completed from './pages/Completed';
@@ -28,6 +29,7 @@ export default function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="week" element={<WeekView />} />
         <Route path="completed" element={<Completed />} />
         <Route path="summarizer" element={<Summarizer />} />

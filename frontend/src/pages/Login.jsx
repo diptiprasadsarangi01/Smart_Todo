@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import { loginUser, googleLoginUser } from "../api/auth";
@@ -15,9 +15,14 @@ export default function Login() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    console.log("change2---",e.target.name);
   };
+  useEffect(() => {
+    console.log("Updated form:", form);
+  }, [form]);
 
   const handleSubmit = async () => {
+    
     try {
       setLoading(true);
       const res = await loginUser(form);
