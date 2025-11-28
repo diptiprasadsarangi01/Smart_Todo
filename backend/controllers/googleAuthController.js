@@ -15,13 +15,12 @@ const generateToken = (user) =>
 // -----------------------------------------
 export const googleLogin = async (req, res) => {
   try {
-    const { credential } = req.body; // Google token from frontend
+    const { credential } = req.body;
 
     if (!credential) {
       return res.status(400).json({ message: "Credential missing" });
     }
 
-    // Verify Google token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -37,22 +36,35 @@ export const googleLogin = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // New Google user
+      // New signup via Google
       user = new User({
         name,
         email,
         googleId: sub,
-        profilePic: picture,
+        profilePic: picture || "", // may be empty
       });
       await user.save();
     } else {
-      // Link Google account to existing user
+      // Existing user → link Google
       if (!user.googleId) {
         user.googleId = sub;
-        if (!user.profilePic) user.profilePic = picture;
-        await user.save();
       }
+
+      // update profile pic if empty
+      if (!user.profilePic && picture) {
+        user.profilePic = picture;
+      }
+
+      await user.save();
     }
+
+    // FINAL PROFILE PIC (Google → or fallback)
+    const finalAvatar =
+      user.profilePic?.trim() !== ""
+        ? user.profilePic
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            (user.name || email.charAt(0)).charAt(0).toUpperCase()
+          )}&background=4F46E5&color=fff&size=128`;
 
     const token = generateToken(user);
 
@@ -62,7 +74,7 @@ export const googleLogin = async (req, res) => {
       user: {
         name: user.name,
         email: user.email,
-        profilePic: user.profilePic,
+        profilePic: finalAvatar,
       },
     });
   } catch (err) {

@@ -73,7 +73,7 @@ export default function Header({ title, collapsed, setCollapsed }) {
               <div className="flex flex-col items-center">
                 <img
                   src={profileImage}
-                  alt="Profile"
+                  alt="User"
                   className="w-16 h-16 rounded-full mb-3 border border-white/20"
                 />
                 <p className="font-semibold">{username}</p>

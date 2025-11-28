@@ -2,11 +2,14 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import sendEmail from "../utils/sendEmail.js"; 
+import { OAuth2Client } from "google-auth-library";
+import sendEmail from "../utils/sendEmail.js";
 
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Create JWT
 const generateToken = (user) =>
-  jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
 /* =====================================================
    🔵 SEND OTP (Step 1)
@@ -98,7 +101,7 @@ export const signup = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.json({ message: "Signup completed successfully", token });
+    res.json({ message: "Signup completed successfully", token, user });
   } catch (err) {
     res.status(500).json({ message: "Signup failed", error: err.message });
   }
@@ -123,8 +126,86 @@ export const login = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.json({ message: "Login successful", token });
+    res.json({ message: "Login successful", token, user });
   } catch (err) {
     res.status(500).json({ message: "Login failed", error: err.message });
   }
 };
+
+/* =====================================================
+   🟢 GOOGLE LOGIN / SIGNUP
+===================================================== */
+export const googleLoginUser = async (req, res) => {
+  try {
+    const { token: googleIdToken } = req.body;
+
+    if (!googleIdToken) {
+      return res.status(400).json({ message: "Google token missing" });
+    }
+
+    // Verify token with Google
+    const ticket = await client.verifyIdToken({
+      idToken: googleIdToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture: profilePic, sub: googleId } = payload;
+
+    if (!email) {
+      return res.status(400).json({ message: "Google login failed: no email" });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Existing user → login
+      const jwtToken = generateToken(user);
+      return res.json({ message: "Login successful", token: jwtToken, user });
+    }
+
+    // New user → create account
+    user = new User({
+      name: name || "Google User",
+      email,
+      profilePic: profilePic || "",
+      googleId,
+      isVerified: true,
+      password: "unverified", // placeholder for Google users
+    });
+
+    await user.save();
+
+    const jwtToken = generateToken(user);
+    return res.json({
+      message: "Account created & login successful",
+      token: jwtToken,
+      user,
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    return res.status(500).json({ message: "Google login failed", error: err.message });
+  }
+};
+
+export const checkEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (user) {
+      return res.json({
+        exists: true,
+        hasPassword: !!user.password,
+      });
+    }
+
+    return res.json({ exists: false, hasPassword: false });
+  } catch (err) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+

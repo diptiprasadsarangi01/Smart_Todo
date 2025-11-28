@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
-import { loginUser, googleLoginUser } from "../api/auth";
+import { loginUser, googleLoginUser as apiGoogleLoginUser } from "../api/auth";
 import { GoogleLogin } from "@react-oauth/google";
+import { useUser } from "../context/UserContext";
 
 export default function Login() {
   const nav = useNavigate();
+  const { setUser } = useUser(); // Update context after login
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -15,19 +17,16 @@ export default function Login() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    console.log("change2---",e.target.name);
   };
-  useEffect(() => {
-    console.log("Updated form:", form);
-  }, [form]);
 
+  // NORMAL LOGIN
   const handleSubmit = async () => {
-    
     try {
       setLoading(true);
       const res = await loginUser(form);
       localStorage.setItem("token", res.data.token);
-      nav("/");
+      setUser(res.data.user); // Update user context
+      nav("/"); // Navigate to dashboard
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     } finally {
@@ -35,7 +34,21 @@ export default function Login() {
     }
   };
 
-
+  // GOOGLE LOGIN
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const res = await apiGoogleLoginUser(credentialResponse.credential);
+      localStorage.setItem("token", res.data.token);
+      setUser(res.data.user); // Update user context
+      nav("/"); // Navigate to dashboard
+    } catch (err) {
+      console.error("Google login failed:", err);
+      alert("Google Login Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -51,7 +64,6 @@ export default function Login() {
           <button className="flex-1 py-2 rounded-full bg-white text-black font-medium">
             Login
           </button>
-
           <Link
             to="/signup"
             className="flex-1 py-2 rounded-full bg-white/10 text-white text-center"
@@ -60,7 +72,7 @@ export default function Login() {
           </Link>
         </div>
 
-        {/* Email */}
+        {/* Email & Password Inputs */}
         <Input
           label="Email"
           name="email"
@@ -68,8 +80,6 @@ export default function Login() {
           onChange={handleChange}
           placeholder="your@email.com"
         />
-
-        {/* Password */}
         <Input
           label="Password"
           name="password"
@@ -90,24 +100,12 @@ export default function Login() {
         {/* Divider */}
         <div className="my-4 text-center opacity-80">Or continue with</div>
 
+        {/* Google Login */}
         <div className="flex flex-col gap-3">
-
-          {/* GOOGLE LOGIN */}
           <GoogleLogin
-            onSuccess={async (cred) => {
-              try {
-                const res = await googleLoginUser(cred.credential);
-                localStorage.setItem("token", res.data.token);
-                nav("/");
-              } catch (err) {
-                console.error(err);
-                alert("Google Login Failed");
-              }
-            }}
+            onSuccess={handleGoogleLogin}
             onError={() => alert("Google Login Failed")}
           />
-
-
         </div>
       </div>
     </div>

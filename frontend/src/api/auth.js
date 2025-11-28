@@ -15,6 +15,13 @@ export const verifyOTP = async (email, code) => {
 };
 
 // ------------------------------
+// 🟡 CHECK EMAIL BEFORE SIGNUP
+// ------------------------------
+export const checkEmail = async (email) => {
+  return API.post("/auth/check-email", { email });
+};
+
+// ------------------------------
 // 🟢 FINAL SIGNUP (Step 3)
 // ------------------------------
 export const signupUser = async (data) => {
