@@ -15,6 +15,13 @@ export const verifyOTP = async (email, code) => {
 };
 
 // ------------------------------
+// 🔴 RESET PASSWORD (after OTP verification)
+// ------------------------------
+export const resetPasswordAPI = async (email, newPassword) => {
+  return API.post("/auth/reset-password", { email, newPassword });
+};
+
+// ------------------------------
 // 🟡 CHECK EMAIL BEFORE SIGNUP
 // ------------------------------
 export const checkEmail = async (email) => {

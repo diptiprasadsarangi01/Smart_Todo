@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import WeekView from './pages/WeekView';
@@ -17,7 +18,7 @@ export default function App() {
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-
+      <Route path="/reset-password" element={<ForgotPassword />} />
       {/* Protected Routes */}
       <Route 
         path="/" 

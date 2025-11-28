@@ -50,6 +50,8 @@ export const sendOTP = async (req, res) => {
   }
 };
 
+
+
 /* =====================================================
    🔵 VERIFY OTP (Step 2)
 ===================================================== */
@@ -75,6 +77,34 @@ export const verifyOTP = async (req, res) => {
     res.json({ message: "Email verified successfully" });
   } catch (err) {
     res.status(500).json({ message: "OTP verification failed" });
+  }
+};
+
+/* =====================================================
+   🔵 RESET PASSWORD (after verifying OTP)
+===================================================== */
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    // Hash new password
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashed;
+
+    // Clear OTP fields
+    user.verificationCode = undefined;
+    user.verificationCodeExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: "Password reset failed", error: err.message });
   }
 };
 

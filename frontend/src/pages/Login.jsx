@@ -87,6 +87,15 @@ export default function Login() {
           onChange={handleChange}
           placeholder="••••••"
         />
+      {/* Forgot Password Link */}
+      <div className="text-right mt-1 mb-3">
+        <Link
+          to="/reset-password"
+          className="text-white/80 text-sm hover:text-white underline"
+        >
+          Forgot Password?
+        </Link>
+      </div>
 
         {/* Login Button */}
         <button
