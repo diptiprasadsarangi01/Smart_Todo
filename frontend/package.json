@@ -15,6 +15,7 @@
     "axios": "^1.13.2",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
+    "chrono-node": "^2.9.0",
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
     "lucide-react": "^0.554.0",
