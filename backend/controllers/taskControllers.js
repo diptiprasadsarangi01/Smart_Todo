@@ -7,10 +7,10 @@ import { setCache } from "../middleware/cacheMiddleware.js";
 // ------------------------
 export const addTask = async (req, res, next) => {
   try {
-    const { title, summary, dueDate, priority } = req.body;
+    const { title, summary, dueDate, priority, category } = req.body;
 
     // -------------------------------
-    // ⭐ Validate Due Date (Backend Security)
+    // ⭐ Validate Due Date
     // -------------------------------
     if (!dueDate) {
       return res.status(400).json({ message: "Due date is required" });
@@ -29,14 +29,20 @@ export const addTask = async (req, res, next) => {
     }
 
     // -------------------------------
+    // ⭐ Category comes from frontend (AI button)
+    // -------------------------------
+    const finalCategory = category ? category.toLowerCase() : "misc";
+
+    // -------------------------------
     // Create Task
     // -------------------------------
     const newTask = new Task({
-      createdBy: req.user.id, // FIXED
+      createdBy: req.user.id,
       title,
       description: summary,
       dueDate,
       priority,
+      category: finalCategory,
     });
 
     await newTask.save();
@@ -48,37 +54,12 @@ export const addTask = async (req, res, next) => {
 };
 
 // ------------------------
-// Get Today Tasks
-// ------------------------
-export const getTodayTasks = async (req, res, next) => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tasks = await Task.find({
-      createdBy: req.user.id, // FIXED
-      dueDate: { $gte: today },
-    }).sort({ dueDate: 1 });
-
-    // Cache response (if cacheMiddleware used)
-    if (res.locals.cacheKey) {
-      await setCache(res.locals.cacheKey, tasks);
-    }
-
-    res.status(200).json(tasks);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ------------------------
 // Update Task
 // ------------------------
 export const updateTask = async (req, res, next) => {
   try {
-    const { title, description, priority, dueDate, status } = req.body;
+    const { title, description, priority, dueDate, status, category } = req.body;
 
-    // Build allowed update fields safely
     const updateData = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
@@ -86,14 +67,21 @@ export const updateTask = async (req, res, next) => {
     if (dueDate !== undefined) updateData.dueDate = dueDate;
     if (status !== undefined) updateData.status = status;
 
+    // ⭐ If frontend AI gives category → use it
+    if (category) {
+      updateData.category = category.toLowerCase();
+    }
+
     const updatedTask = await Task.findOneAndUpdate(
-      { _id: req.params.id, createdBy: req.user.id }, // security check
+      { _id: req.params.id, createdBy: req.user.id },
       updateData,
       { new: true }
     );
 
     if (!updatedTask) {
-      return res.status(404).json({ message: "Task not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ message: "Task not found or unauthorized" });
     }
 
     res.status(200).json(updatedTask);
@@ -109,7 +97,7 @@ export const deleteTask = async (req, res, next) => {
   try {
     const deleted = await Task.findOneAndDelete({
       _id: req.params.id,
-      createdBy: req.user.id, // FIXED SECURITY
+      createdBy: req.user.id,
     });
 
     if (!deleted) {
@@ -122,22 +110,42 @@ export const deleteTask = async (req, res, next) => {
   }
 };
 
+// ------------------------
+// Get Today Tasks
+// ------------------------
+export const getTodayTasks = async (req, res, next) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tasks = await Task.find({
+      createdBy: req.user.id,
+      dueDate: { $gte: today },
+    }).sort({ dueDate: 1 });
+
+    if (res.locals.cacheKey) {
+      await setCache(res.locals.cacheKey, tasks);
+    }
+
+    res.status(200).json(tasks);
+  } catch (err) {
+    next(err);
+  }
+};
 
 // ------------------------
-// Get Current Week Tasks (Mon–Sun)
+// Get Week Tasks
 // ------------------------
 export const getWeekTasks = async (req, res, next) => {
   try {
     const now = new Date();
 
-    // Start of week (Monday)
     const startOfWeek = new Date(now);
     const day = now.getDay();
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    // End of week (Sunday)
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
@@ -147,17 +155,22 @@ export const getWeekTasks = async (req, res, next) => {
       dueDate: { $gte: startOfWeek, $lte: endOfWeek },
     }).sort({ dueDate: 1 });
 
-    // Group by weekday
     const weekData = {};
-
-    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
 
     days.forEach((d) => (weekData[d] = []));
 
     tasks.forEach((task) => {
       const taskDay = new Date(task.dueDate);
-      const weekday = days[(taskDay.getDay() + 6) % 7]; // convert Sun=0 → 6
-
+      const weekday = days[(taskDay.getDay() + 6) % 7];
       weekData[weekday].push(task);
     });
 

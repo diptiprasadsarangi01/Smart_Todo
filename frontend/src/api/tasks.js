@@ -12,8 +12,8 @@ export const getWeekTasks = async () => {
   return res.data; // { Monday: [...], Tuesday: [...], ... }
 };
 
-export const addTask = async ({ title, summary, priority, dueDate }) => {
-  const res = await api.post("/tasks/add", { title, summary, priority, dueDate });
+export const addTask = async ({ title, summary, priority, dueDate,category  }) => {
+  const res = await api.post("/tasks/add", { title, summary, priority, dueDate,category, });
   return res.data; // { message, task }
 };
 

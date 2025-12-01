@@ -2,13 +2,13 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Initialize Gemini client (NO billing required)
+// Initialize Gemini client
 const client = new GoogleGenAI({
   apiKey: process.env.AI_API_KEY,
 });
 
 /* =======================================================
-   AI — Process Task (Generate title, desc, priority)
+   AI — Process Task (Generate title, desc, priority, category)
 ======================================================= */
 export const processTaskAI = async (req, res) => {
   try {
@@ -18,21 +18,34 @@ export const processTaskAI = async (req, res) => {
       return res.status(400).json({ message: "Text is required" });
     }
 
-    // Using the same free model your old app uses
     const request = {
-      model: "gemini-2.5-flash", 
+      model: "gemini-2.5-flash",
       contents: [
         {
           role: "user",
           parts: [
             {
               text: `
-Analyze this task and return JSON:
+Analyze this user task and respond ONLY with a JSON object.
+
+Return JSON in this exact format:
+
 {
-  "title": "3-6 word title",
-  "description": "1-2 sentence description",
-  "priority": "low | medium | high"
+  "title": "3-6 word clean title",
+  "description": "1-2 sentence helpful description",
+  "priority": "low | medium | high",
+  "category": "work | personal | finance | learning | health | misc"
 }
+
+Rules:
+- Pick ONLY ONE category.
+- Follow these category meanings:
+  • work → job, office, professional tasks
+  • personal → lifestyle, home, shopping, family
+  • finance → bills, payments, money, banking
+  • learning → study, courses, exams, skills
+  • health → doctor, medicine, exercise, self-care
+  • misc → anything that doesn't fit above
 
 Task: "${text}"
               `,
@@ -47,6 +60,7 @@ Task: "${text}"
     const responseText =
       result.response?.text() || result.text || "";
 
+    // Extract JSON from AI output safely
     const cleanJSON = responseText.slice(
       responseText.indexOf("{"),
       responseText.lastIndexOf("}") + 1

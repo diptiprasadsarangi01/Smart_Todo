@@ -20,6 +20,11 @@ const taskSchema = new mongoose.Schema(
       enum: ["low", "medium", "high"],
       default: "medium",
     },
+    category: {
+      type: String,
+      enum: ["work", "personal", "finance", "learning", "health", "misc"],
+      default: "misc",
+    },
     status: {
       type: String,
       enum: ["pending", "completed"],
