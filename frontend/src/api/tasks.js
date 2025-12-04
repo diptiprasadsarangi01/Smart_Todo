@@ -30,3 +30,15 @@ export const deleteTask = async (id) => {
   const res = await api.delete(`/tasks/${id}`);
   return res.data;
 };
+
+export const getUpcomingTasks = async () => {
+  const res = await api.get("/tasks/upcoming");
+  return res.data;
+};
+
+// Send small candidate list for AI ranking
+export const rankTasks = async (tasks) => {
+  // tasks: array of { _id, title, description, dueDate, priority, category }
+  const res = await api.post("/ai/rank", { tasks });
+  return res.data; // { success: true, rankings: [ {id, aiScore, reason} ] }
+};

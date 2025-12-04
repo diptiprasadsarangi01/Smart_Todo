@@ -207,3 +207,23 @@ export const getWeekTasks = async (req, res, next) => {
     next(err);
   }
 };
+//-------------------
+// Get Upcoming Tasks
+//-------------------
+// controllers/taskController.js (add below other exports)
+export const getUpcomingTasks = async (req, res, next) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tasks = await Task.find({
+      createdBy: req.user.id,
+      dueDate: { $gte: today },   // upcoming including today
+      status: "pending",
+    }).sort({ dueDate: 1 });
+
+    res.status(200).json(tasks);
+  } catch (err) {
+    next(err);
+  }
+};

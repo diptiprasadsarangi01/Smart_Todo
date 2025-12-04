@@ -1,11 +1,12 @@
 // src/pages/Dashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {Briefcase,Home,Wallet,BookOpen,HeartPulse,Boxes} from "lucide-react";
 import api from "../api/axios";
-import { getTodayPendingTasks, addTask, updateTask, deleteTask } from "../api/tasks";
+import { getTodayPendingTasks, addTask, updateTask, deleteTask, getUpcomingTasks, rankTasks } from "../api/tasks";
 import {Select,SelectTrigger,SelectContent,SelectGroup,SelectItem,SelectValue,} from "@/components/ui/select";
 import Input from "../components/Input";
 import TaskCard from "../components/TaskCard";
+import UrgentTaskCard from "../components/UrgentTaskCard";
 import EditTaskModal from "../components/EditTaskModal";
 import * as chrono from "chrono-node";
 import DatePicker from "../components/DatePicker";
@@ -24,6 +25,9 @@ export default function Dashboard() {
 
 
   const [aiLoading, setAiLoading] = useState(false);
+
+  const [urgentList, setUrgentList] = useState([]); // final top 5–6
+  const [urgentLoading, setUrgentLoading] = useState(false);
 
   const [editTask, setEditTask] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -199,7 +203,113 @@ const categoryIcon = {
   health: <HeartPulse size={16} color={categoryColors.health} />,
   misc: <Boxes size={16} color={categoryColors.misc} />,
 };
+const keywords = ["urgent","asap","deadline","client","exam","pay","bill","meeting","important","submit"];
 
+const computeLocalScore = (task) => {
+  let score = 0;
+  // priority
+  if (task.priority === "high") score += 50;
+  else if (task.priority === "medium") score += 30;
+  else score += 10;
+
+  // days until due
+  if (task.dueDate) {
+    const now = new Date();
+    const due = new Date(task.dueDate);
+    // normalize to start of day
+    due.setHours(0,0,0,0);
+    const diffDays = Math.ceil((due - now) / (1000*60*60*24));
+    if (diffDays <= 0) score += 50;       // due today or overdue
+    else if (diffDays === 1) score += 35; // tomorrow
+    else if (diffDays <= 7) score += 15;  // within a week
+    else score += 0;
+  }
+
+  // keyword boosts
+  const text = `${task.title || ""} ${task.description || task.summary || ""}`.toLowerCase();
+  for (const k of keywords) if (text.includes(k)) score += 15;
+
+  // category boost
+  if (task.category === "finance") score += 10;
+
+  // cap
+  return Math.min(score, 200); // raw cap; we normalize later
+};
+
+const fetchUrgentHybrid = useCallback(async () => {
+  try {
+    setUrgentLoading(true);
+    // 1. Get all upcoming tasks
+    const all = await getUpcomingTasks(); // uses API: /tasks/upcoming
+
+    if (!Array.isArray(all) || all.length === 0) {
+      setUrgentList([]);
+      return;
+    }
+
+    // 2. Compute local scores
+    const scored = all.map(t => ({ ...t, localRaw: computeLocalScore(t) }));
+
+    // 3. Sort by localRaw and pick top candidates (8-12)
+    scored.sort((a, b) => b.localRaw - a.localRaw);
+    const candidates = scored.slice(0, 12);
+
+    // 4. Call AI rank endpoint with candidates
+    const aiResp = await rankTasks(candidates.map(c => ({
+      _id: c._id,
+      title: c.title,
+      description: c.description || c.summary || "",
+      dueDate: c.dueDate,
+      priority: c.priority,
+      category: c.category
+    })));
+
+    let rankings = [];
+    if (aiResp?.success && Array.isArray(aiResp.rankings)) {
+      rankings = aiResp.rankings; // [{ id, aiScore, reason }, ...]
+    } else {
+      // fallback: give default aiScore = 50 for each
+      rankings = candidates.map(c => ({ id: c._id, aiScore: 50, reason: "No AI result — fallback" }));
+    }
+
+    // 5. Normalize localRaw -> 0..100
+    const maxLocal = Math.max(...candidates.map(c => c.localRaw), 1);
+    const candidatesMap = new Map(candidates.map(c => [c._id || c._id, c]));
+
+    // 6. Merge AI scores and compute final
+    const alpha = 0.6, beta = 0.4;
+    const merged = candidates.map(c => {
+      const aiObj = rankings.find(r => r.id === (c._id || c._id)) || {};
+      const aiScore = typeof aiObj.aiScore === "number" ? aiObj.aiScore : 50;
+      const localNorm = Math.round((c.localRaw / maxLocal) * 100);
+      const finalScore = Math.round(alpha * localNorm + beta * aiScore);
+      return {
+        ...c,
+        localNorm,
+        aiScore,
+        finalScore,
+        reason: aiObj.reason || ""
+      };
+    });
+
+    merged.sort((a,b) => b.finalScore - a.finalScore);
+
+    // 7. Keep top 6
+    setUrgentList(merged.slice(0, 6));
+  } catch (err) {
+    console.error("Hybrid urgent fetch error", err);
+    setUrgentList([]); // fallback
+  } finally {
+    setUrgentLoading(false);
+  }
+}, []);
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  api.attachAuth(token);
+  fetchTasks();
+  fetchUrgentHybrid();
+}, [fetchUrgentHybrid]);
 
 
   return (
@@ -317,6 +427,23 @@ const categoryIcon = {
 
       {/* AI Sidebar */}
       <aside className="hidden lg:block card-glass p-6 rounded-lg">
+        <h4 className="font-semibold mb-3">Urgent Tasks</h4>  
+
+<div className="space-y-2">
+  {urgentLoading && <p className="text-gray-400 text-sm">Analyzing tasks...</p>}
+  
+  {!urgentLoading && urgentList.length === 0 && (
+    <p className="text-gray-500 text-xs">No urgent tasks found.</p>
+  )}
+
+  {!urgentLoading &&
+    urgentList.map((task) => (
+      <UrgentTaskCard key={task._id} task={task} />
+    ))}
+</div>
+
+        
+        <hr className="my-4 border-white/6" />
         <h4 className="font-semibold mb-3">AI Assistant</h4>
         <div className="p-4 rounded bg-white/5 mb-4">
           Hello! I'm your AI assistant. How can I help you today?

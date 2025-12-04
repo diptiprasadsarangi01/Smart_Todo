@@ -7,6 +7,7 @@ import {
   updateTask,
   deleteTask,
   getWeekTasks,
+  getUpcomingTasks,
 } from "../controllers/taskControllers.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -18,6 +19,10 @@ router.post("/add", verifyToken, addTask);
 // Get today's tasks
 router.get("/today", verifyToken, getTodayTasks);
 router.get("/today/pending", verifyToken, getTodayPendingTasks);
+
+// Get Upcoming tasks
+router.get("/upcoming", verifyToken, getUpcomingTasks );
+
 // Update task by ID
 router.put("/:id", verifyToken, updateTask);
 
