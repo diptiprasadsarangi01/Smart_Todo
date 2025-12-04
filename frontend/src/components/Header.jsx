@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Menu, X, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { formatShortDate } from "../utils/dateUtils";
 
 export default function Header({ title, collapsed, setCollapsed }) {
   const [open, setOpen] = useState(false);
@@ -16,6 +17,8 @@ export default function Header({ title, collapsed, setCollapsed }) {
       ? user.profilePic
       : `https://ui-avatars.com/api/?name=${username}&background=0D8ABC&color=fff`;
 
+  const today = new Date().toISOString().split("T")[0];
+  const formattedToday = formatShortDate(today);
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
@@ -49,7 +52,7 @@ export default function Header({ title, collapsed, setCollapsed }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
-        <div className="text-sm opacity-90">{new Date().toLocaleDateString()}</div>
+        <div className="text-sm opacity-90">{formattedToday}</div>
 
         {/* Profile & Logout */}
         <div className="flex items-center gap-2">

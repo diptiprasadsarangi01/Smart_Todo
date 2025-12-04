@@ -3,6 +3,7 @@ import express from "express";
 import {
   addTask,
   getTodayTasks,
+  getTodayPendingTasks,
   updateTask,
   deleteTask,
   getWeekTasks,
@@ -16,7 +17,7 @@ router.post("/add", verifyToken, addTask);
 
 // Get today's tasks
 router.get("/today", verifyToken, getTodayTasks);
-
+router.get("/today/pending", verifyToken, getTodayPendingTasks);
 // Update task by ID
 router.put("/:id", verifyToken, updateTask);
 

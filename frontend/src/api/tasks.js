@@ -3,17 +3,21 @@ import api from "./axios";
 
 export const getTodayTasks = async () => {
   const res = await api.get("/tasks/today");
-  return res.data; // array of tasks
+  return res.data; // array of all tasks due today
 };
 
-// src/api/tasks.js
+export const getTodayPendingTasks = async () => {
+  const res = await api.get("/tasks/today/pending");
+  return res.data; // only Pending tasks due today
+};
+
 export const getWeekTasks = async () => {
   const res = await api.get("/tasks/week");
   return res.data; // { Monday: [...], Tuesday: [...], ... }
 };
 
-export const addTask = async ({ title, summary, priority, dueDate,category  }) => {
-  const res = await api.post("/tasks/add", { title, summary, priority, dueDate,category, });
+export const addTask = async ({ title, summary, priority, dueDate, category }) => {
+  const res = await api.post("/tasks/add", { title, summary, priority, dueDate, category });
   return res.data; // { message, task }
 };
 

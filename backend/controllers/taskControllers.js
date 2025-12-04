@@ -118,14 +118,42 @@ export const getTodayTasks = async (req, res, next) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
     const tasks = await Task.find({
       createdBy: req.user.id,
-      dueDate: { $gte: today },
+      dueDate: {
+        $gte: today,      // start of today
+        $lt: tomorrow,    // before tomorrow starts
+      }
     }).sort({ dueDate: 1 });
 
     if (res.locals.cacheKey) {
       await setCache(res.locals.cacheKey, tasks);
     }
+
+    res.status(200).json(tasks);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTodayPendingTasks = async (req, res, next) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    const tasks = await Task.find({
+      createdBy: req.user.id,
+      dueDate: { $gte: today, $lt: tomorrow },
+      status: "pending"
+    }).sort({ dueDate: 1 });
 
     res.status(200).json(tasks);
   } catch (err) {

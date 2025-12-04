@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import {Briefcase,Home,Wallet,BookOpen,HeartPulse,Boxes} from "lucide-react";
 import api from "../api/axios";
-import { getTodayTasks, addTask, updateTask, deleteTask } from "../api/tasks";
+import { getTodayPendingTasks, addTask, updateTask, deleteTask } from "../api/tasks";
 import {Select,SelectTrigger,SelectContent,SelectGroup,SelectItem,SelectValue,} from "@/components/ui/select";
 import Input from "../components/Input";
 import TaskCard from "../components/TaskCard";
@@ -45,7 +45,7 @@ export default function Dashboard() {
     setLoading(true);
     setError("");
     try {
-      const data = await getTodayTasks();
+      const data = await getTodayPendingTasks();
       setTasks(data);
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to fetch tasks");
@@ -72,7 +72,7 @@ const handleAdd = async () => {
     });
 
     // 🔥 Instantly refresh Today's tasks after adding
-    const updated = await getTodayTasks();
+    const updated = await getTodayPendingTasks();
     setTasks(updated);
 
     // Reset form
@@ -141,15 +141,26 @@ const handleAdd = async () => {
 
   /* Complete */
   const handleComplete = async (id) => {
-    try {
-      await updateTask(id, { status: "completed" });
-      setTasks((s) =>
-        s.map((t) => (t._id === id ? { ...t, status: "completed" } : t))
-      );
-    } catch {
-      alert("Complete failed");
-    }
-  };
+  try {
+    // 1️⃣ Update on backend
+    await updateTask(id, { status: "completed" });
+
+    // 2️⃣ Add a fade-out flag on frontend (TaskCard reads it)
+    setTasks((prev) =>
+      prev.map((t) =>
+        t._id === id ? { ...t, isFading: true } : t
+      )
+    );
+
+    // 3️⃣ After animation, remove from list
+    setTimeout(() => {
+      setTasks((prev) => prev.filter((t) => t._id !== id));
+    }, 300); // match animation duration
+
+  } catch {
+    alert("Complete failed");
+  }
+};
 
   const openEdit = (task) => {
     setEditTask(task);

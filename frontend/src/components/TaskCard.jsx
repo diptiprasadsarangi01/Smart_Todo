@@ -25,7 +25,7 @@ export default function TaskCard({ task, onDelete, onComplete, onEdit }) {
   const cat = task.category?.toLowerCase() || "misc";
 
   return (
-    <div className="card-glass border rounded-md p-4 mb-4">
+    <div className={`card-glass border rounded-md p-4 mb-4 transition-all duration-300 ${task.isFading ? "opacity-0 translate-x-5" : "opacity-100"}`}>
       <div className="flex justify-between items-start">
         <div>
           {/* Category Icon + Title */}
