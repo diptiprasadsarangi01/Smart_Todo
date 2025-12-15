@@ -20,14 +20,15 @@ export default function MainLayout() {
           collapsed ? "w-20" : "w-64"
         }`}
       >
-        <Sidebar collapsed={collapsed} />
+        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       </aside>
 
-      <main className="flex-1 p-6 pb-20 overflow-auto">
+      <main className="flex-1 p-4  pb-20 overflow-auto">
         <Header
           title={title}
           collapsed={collapsed}
           setCollapsed={setCollapsed}
+          
         />
 
         <Outlet />

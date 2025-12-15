@@ -38,36 +38,31 @@ export default function Header({ title, collapsed, setCollapsed }) {
   };
 
   return (
-    <div className="flex items-center justify-between mb-6 relative">
+    <div className="flex items-center justify-between  mb-6 relative">
       {/* Left Section */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition"
-        >
-          {collapsed ? <Menu size={18} /> : <X size={18} />}
-        </button>
-        <h2 className="text-lg font-semibold">{title}</h2>
+      <div className="flex items-center gap-3 ">
+
+        <h2 className="text-sm md:text-md lg:text-lg font-semibold">{title}</h2>
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1 md:gap-3 ">
         <div className="text-sm opacity-90">{formattedToday}</div>
 
         {/* Profile & Logout */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-3 ">
           {/* Profile */}
           <div className="relative" ref={dropdownRef}>
             <img
               src={profileImage}
               alt="User"
-              className="w-10 h-10 rounded-full cursor-pointer border border-white/20 transition-all hover:scale-105"
+              className="w-6 h-6 md:w-10 md:h-10 rounded-full cursor-pointer border-3 border-purple-700   transition-all hover:scale-105"
               onClick={() => setOpen(!open)}
             />
 
             {/* Dropdown */}
             <div
-              className={`absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 shadow-lg rounded-xl p-4 z-50 border border-white/10 transform transition-all duration-300 origin-top ${
+              className={`absolute right-0 mt-2 w-55 bg-neutral-950 shadow-lg rounded-xl p-4 z-50 border border-white/10 transform transition-all duration-300 origin-top ${
                 open
                   ? "scale-100 opacity-100"
                   : "scale-95 opacity-0 pointer-events-none"
@@ -77,7 +72,7 @@ export default function Header({ title, collapsed, setCollapsed }) {
                 <img
                   src={profileImage}
                   alt="User"
-                  className="w-16 h-16 rounded-full mb-3 border border-white/20"
+                  className="w-10 h-10 md:w-16 md:h-16 rounded-full mb-3 p-1  border-purple-500 border-4"
                 />
                 <p className="font-semibold">{username}</p>
                 <p className="text-xs opacity-70 mb-3">{email}</p>
@@ -96,7 +91,7 @@ export default function Header({ title, collapsed, setCollapsed }) {
           {/* Logout Icon */}
           <button
             onClick={handleLogout}
-            className="p-2   hover:text-white/60 transition"
+            className="p-1   hover:text-white/60 transition "
             title="Logout"
           >
             <LogOut size={18} />

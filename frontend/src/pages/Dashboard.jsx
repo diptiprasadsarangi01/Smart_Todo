@@ -539,6 +539,7 @@ export default function Dashboard() {
         {/* Today's Analytics now uses ALL today's tasks (completed + pending) */}
         <TodayAnalytics tasks={todayAllTasks} />
 
+        <hr className="my-4 border-white/6" />
         <h4 className="font-semibold mb-3">Urgent Tasks</h4>
 
         <div className="space-y-2">
@@ -553,12 +554,12 @@ export default function Dashboard() {
         </div>
 
         <hr className="my-4 border-white/6" />
-        <h4 className="font-semibold mb-3">AI Assistant</h4>
+        {/* <h4 className="font-semibold mb-3">AI Assistant</h4>
         <div className="p-4 rounded bg-white/5 mb-4">Hello! I'm your AI assistant. How can I help you today?</div>
         <div className="flex gap-2 mt-auto">
           <input className="flex-1 p-3 rounded border border-white/8 bg-white/5" placeholder="Ask me anything..." />
           <button className="p-3 rounded bg-white/10">➤</button>
-        </div>
+        </div> */}
       </aside>
 
       <EditTaskModal open={isEditOpen} onClose={() => setIsEditOpen(false)} task={editTask} onSave={handleSaveEdit} />
