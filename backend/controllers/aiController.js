@@ -19,7 +19,7 @@ export const processTaskAI = async (req, res) => {
     }
 
     const request = {
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       contents: [
         {
           role: "user",
@@ -110,7 +110,7 @@ ${lines.join("\n")}
 
     // call your client (example using GoogleGenAI from your other file)
     const request = {
-      model: process.env.AI_MODEL || "gemini-2.5-flash",
+      model: process.env.AI_MODEL || "gemini-2.5-flash-lite",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     };
 

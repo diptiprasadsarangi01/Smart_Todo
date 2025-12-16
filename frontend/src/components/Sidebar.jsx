@@ -12,7 +12,7 @@ const menuItems = [
   { to: "/dashboard", label: "Dashboard", icon: <LayoutGrid size={18} /> },
   { to: "/week", label: "Week View", icon: <CalendarDays size={18} /> },
   { to: "/completed", label: "Completed", icon: <CheckSquare size={18} /> },
-  { to: "/summarizer", label: "Summarizer", icon: <FileText size={18} /> },
+  { to: "/analyst ", label: "AIAnalyst", icon: <FileText size={18} /> },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }) {

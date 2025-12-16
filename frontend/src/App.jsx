@@ -8,7 +8,7 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import WeekView from './pages/WeekView';
 import Completed from './pages/Completed';
-import Summarizer from './pages/Summarizer';
+import AIAnalyst from './pages/AIAnalyst';
 import ProtectedRoute from './ProtectedRoute';
 
 export default function App() {
@@ -33,7 +33,7 @@ export default function App() {
         <Route path="profile" element={<Profile />} />
         <Route path="week" element={<WeekView />} />
         <Route path="completed" element={<Completed />} />
-        <Route path="summarizer" element={<Summarizer />} />
+        <Route path="analyst" element={<AIAnalyst />} />
       </Route>
 
       {/* Fallback */}
