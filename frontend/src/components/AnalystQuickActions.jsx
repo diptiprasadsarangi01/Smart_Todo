@@ -10,7 +10,7 @@ export default function AnalystQuickActions({ onSelect }) {
   return (
     <>
       <h4 className="font-semibold mb-3">Quick Insights</h4>
-      <div className="space-y-2">
+      <div className="space-y-2 ">
         {actions.map((a) => (
           <button
             key={a}

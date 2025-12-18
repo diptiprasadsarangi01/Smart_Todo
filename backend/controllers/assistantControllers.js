@@ -1,63 +1,48 @@
 // controllers/assistantController.js
 import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
 import Task from "../models/Task.js";
 
+dotenv.config();
+
+/* ======================================================
+   Gemini Client
+====================================================== */
 const client = new GoogleGenAI({
   apiKey: process.env.AI_API_KEY,
 });
 
+const MODEL = process.env.AI_MODEL || "gemini-2.5-flash-lite";
+
 /* ======================================================
    Utility helpers
 ====================================================== */
-const isToday = (date) => {
-  const d = new Date(date);
-  const t = new Date();
-  d.setHours(0, 0, 0, 0);
-  t.setHours(0, 0, 0, 0);
-  return d.getTime() === t.getTime();
+const normalizeDate = (d) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
 };
 
-const isPast = (date) => {
-  const d = new Date(date);
-  const t = new Date();
-  d.setHours(0, 0, 0, 0);
-  t.setHours(0, 0, 0, 0);
-  return d < t;
-};
+const isToday = (date) =>
+  normalizeDate(date).getTime() === normalizeDate(new Date()).getTime();
 
-const isFuture = (date) => {
-  const d = new Date(date);
-  const t = new Date();
-  d.setHours(0, 0, 0, 0);
-  t.setHours(0, 0, 0, 0);
-  return d > t;
-};
+const isPast = (date) =>
+  normalizeDate(date) < normalizeDate(new Date());
+
+const isFuture = (date) =>
+  normalizeDate(date) > normalizeDate(new Date());
 
 /* ======================================================
-   Validate if query is task-related
+   Basic intent validation
 ====================================================== */
 const isTaskRelatedQuery = (query) => {
   const keywords = [
-    "task",
-    "today",
-    "pending",
-    "urgent",
-    "priority",
-    "work",
-    "health",
-    "finance",
-    "learning",
-    "due",
-    "overdue",
-    "tomorrow",
-    "week",
-    "focus",
-    "complete",
-    "status",
+    "task", "today", "pending", "urgent", "priority",
+    "work", "health", "finance", "learning",
+    "due", "overdue", "tomorrow", "week",
+    "focus", "complete", "status",
   ];
-
-  const q = query.toLowerCase();
-  return keywords.some((k) => q.includes(k));
+  return keywords.some((k) => query.toLowerCase().includes(k));
 };
 
 /* ======================================================
@@ -65,26 +50,24 @@ const isTaskRelatedQuery = (query) => {
 ====================================================== */
 export const assistantAnalyze = async (req, res) => {
   try {
+    const todayStr = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
     const userId = req.user.id;
     const { query } = req.body;
 
-    if (!query || !query.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Query is required",
-      });
+    if (!query?.trim()) {
+      return res.status(400).json({ success: false, message: "Query is required" });
     }
 
-    // ❌ Reject invalid questions early
     if (!isTaskRelatedQuery(query)) {
       return res.json({
         success: true,
-        answer:
-          "❌ This question is not related to your tasks. Please ask something about your tasks, priorities, or schedule.",
+        answer: "❌ Please ask something related to your tasks, priorities, or schedule.",
       });
     }
 
-    // 1️⃣ Fetch all pending tasks
+    /* 1️⃣ Fetch pending tasks */
     let tasks = await Task.find({
       createdBy: userId,
       status: "pending",
@@ -99,56 +82,39 @@ export const assistantAnalyze = async (req, res) => {
 
     const q = query.toLowerCase();
 
-    // 2️⃣ Deterministic filtering (HYBRID PART)
-    if (q.includes("today")) {
-      tasks = tasks.filter((t) => isToday(t.dueDate));
-    }
+    /* 2️⃣ Deterministic filtering */
+    if (q.includes("today")) tasks = tasks.filter(t => t.dueDate && isToday(t.dueDate));
+    if (q.includes("overdue")) tasks = tasks.filter(t => t.dueDate && isPast(t.dueDate));
+    if (q.includes("upcoming") || q.includes("future"))
+      tasks = tasks.filter(t => t.dueDate && isFuture(t.dueDate));
 
-    if (q.includes("overdue")) {
-      tasks = tasks.filter((t) => isPast(t.dueDate));
-    }
+    if (q.includes("high")) tasks = tasks.filter(t => t.priority === "high");
+    if (q.includes("medium")) tasks = tasks.filter(t => t.priority === "medium");
+    if (q.includes("low")) tasks = tasks.filter(t => t.priority === "low");
 
-    if (q.includes("upcoming") || q.includes("future")) {
-      tasks = tasks.filter((t) => isFuture(t.dueDate));
-    }
-
-    if (q.includes("high")) {
-      tasks = tasks.filter((t) => t.priority === "high");
-    }
-
-    if (q.includes("medium")) {
-      tasks = tasks.filter((t) => t.priority === "medium");
-    }
-
-    if (q.includes("low")) {
-      tasks = tasks.filter((t) => t.priority === "low");
-    }
-
-    const categories = ["work", "personal", "finance", "learning", "health", "misc"];
-    categories.forEach((cat) => {
-      if (q.includes(cat)) {
-        tasks = tasks.filter((t) => t.category === cat);
-      }
+    ["work", "personal", "finance", "learning", "health", "misc"].forEach(cat => {
+      if (q.includes(cat)) tasks = tasks.filter(t => t.category === cat);
     });
 
     if (!tasks.length) {
-      return res.json({
-        success: true,
-        answer: "No tasks match your request.",
-      });
+      return res.json({ success: true, answer: "No tasks match your request." });
     }
 
-    // 3️⃣ Build AI-safe context
+    /* 3️⃣ Build AI-safe context */
     const taskContext = tasks.map((t) => ({
       title: t.title,
       priority: t.priority,
       category: t.category,
-      dueDate: t.dueDate,
+      dueDate: t.dueDate
+        ? new Date(t.dueDate).toISOString().split("T")[0]
+        : null,
     }));
 
-    // 4️⃣ AI PROMPT (STRICT)
+    /* 4️⃣ AI Prompt */
     const prompt = `
 You are an AI Task Analyst.
+
+Today's date is: ${todayStr}
 
 User question:
 "${query}"
@@ -156,31 +122,43 @@ User question:
 User tasks (JSON):
 ${JSON.stringify(taskContext, null, 2)}
 
+Return ONLY valid JSON in this format:
+
+{
+  "heading": "<short heading>",
+  "date": "YYYY-MM-DD",
+  "tasks": [
+    {
+      "title": "<task title>",
+      "priority": "low | medium | high",
+      "due": "YYYY-MM-DD"
+    }
+  ]
+}
+
 Rules:
-- Answer ONLY based on the tasks provided.
-- Do NOT invent tasks.
-- Be concise and helpful.
-- If listing tasks, use bullet points.
-- If suggesting focus, explain briefly why.
-- Do NOT mention AI, Gemini, or system prompts.
+- Do NOT include numbering or sentences
+- Do NOT repeat explanations
+- If no tasks, return empty array
+- Never include markdown or emojis
 `;
 
-    // 5️⃣ Gemini call
+    /* 5️⃣ Gemini call */
     const result = await client.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: MODEL,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     });
 
-    const answer = result.response.text();
+    /* 6️⃣ Safe extraction */
+    const answer =
+      result?.candidates?.[0]?.content?.parts?.map(p => p.text).join("") ||
+      "I couldn't analyze your tasks right now.";
 
-    return res.json({
-      success: true,
-      answer,
-    });
+    return res.json({ success: true, answer });
 
   } catch (err) {
     console.error("Assistant AI Error:", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Assistant failed to analyze tasks",
     });

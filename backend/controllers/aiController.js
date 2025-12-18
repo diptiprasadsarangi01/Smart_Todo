@@ -6,7 +6,7 @@ dotenv.config();
 const client = new GoogleGenAI({
   apiKey: process.env.AI_API_KEY,
 });
-
+const MODEL = process.env.AI_MODEL || "gemini-2.5-flash-lite";
 /* =======================================================
    AI — Process Task (Generate title, desc, priority, category)
 ======================================================= */
@@ -19,7 +19,7 @@ export const processTaskAI = async (req, res) => {
     }
 
     const request = {
-      model: "gemini-2.5-flash-lite",
+      model: MODEL,
       contents: [
         {
           role: "user",
@@ -110,7 +110,7 @@ ${lines.join("\n")}
 
     // call your client (example using GoogleGenAI from your other file)
     const request = {
-      model: process.env.AI_MODEL || "gemini-2.5-flash-lite",
+      model:MODEL ,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     };
 
@@ -140,5 +140,3 @@ ${lines.join("\n")}
     return res.status(500).json({ success: false, message: "AI ranking failed", error: err.message });
   }
 };
-
-

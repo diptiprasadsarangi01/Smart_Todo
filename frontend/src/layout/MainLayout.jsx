@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import BottomBar from "../components/BottomBar";
 import Header from "../components/Header";
+import api from "../api/axios";
 
 export default function MainLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    api.attachAuth(token);
+  }, []);
 
   const title =
     location.pathname === "/"

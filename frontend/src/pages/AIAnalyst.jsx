@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import AnalystChat from "../components/AnalystChat";
 import AnalystQuickActions from "../components/AnalystQuickActions";
 import { askAnalyst } from "../api/analyst";
+import { parseAssistantAnswer } from "../utils/parseAssistantAnswer";
 
 export default function AIAnalyst() {
   const [messages, setMessages] = useState([]);
@@ -11,23 +12,39 @@ export default function AIAnalyst() {
   const handleAsk = async (text) => {
     if (!text.trim()) return;
 
-    const userMsg = { role: "user", text };
-    setMessages((prev) => [...prev, userMsg]);
+    // ✅ User message (standardized)
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        payload: { type: "text", text },
+      },
+    ]);
+
     setLoading(true);
 
     try {
       const res = await askAnalyst(text);
+      const parsed = parseAssistantAnswer(res.answer);
 
-      const aiMsg = {
-        role: "assistant",
-        text: res.answer || "I couldn't analyze that.",
-      };
-
-      setMessages((prev) => [...prev, aiMsg]);
+      // ✅ Assistant message (standardized)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          payload: parsed,
+        },
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: "Something went wrong. Try again." },
+        {
+          role: "assistant",
+          payload: {
+            type: "text",
+            text: "Something went wrong. Please try again.",
+          },
+        },
       ]);
     } finally {
       setLoading(false);
@@ -35,9 +52,9 @@ export default function AIAnalyst() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-      {/* Main Chat */}
-      <div className="lg:col-span-2 card-glass p-6 flex flex-col">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-full">
+      {/* Chat */}
+      <div className="lg:col-span-2 card-glass flex flex-col h-74 lg:h-full overflow-hidden">
         <AnalystChat
           messages={messages}
           onSend={handleAsk}
@@ -46,7 +63,7 @@ export default function AIAnalyst() {
       </div>
 
       {/* Sidebar */}
-      <aside className="card-glass p-6">
+      <aside className="card-glass p-4  lg:p-6 overflow-y-auto">
         <AnalystQuickActions onSelect={handleAsk} />
       </aside>
     </div>

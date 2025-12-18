@@ -92,8 +92,6 @@ export default function Dashboard() {
 
   // Attach token + initial fetch
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    api.attachAuth(token);
     fetchTasks();
     fetchUrgentHybrid(); // initial urgent fetch
     // eslint-disable-next-line react-hooks/exhaustive-deps
