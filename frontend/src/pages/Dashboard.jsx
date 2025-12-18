@@ -456,13 +456,13 @@ export default function Dashboard() {
           <button
             onClick={handleAIAssist}
             disabled={aiLoading}
-            className="mt-3 mb-2 px-3 py-2 rounded bg-blue-600/30 text-sm disabled:opacity-60"
+            className="mt-3 mb-2 px-3 py-2 w-2/2 lg:w-fit rounded bg-blue-600/30 text-sm disabled:opacity-60"
           >
             {aiLoading ? "⏳ AI Thinking..." : "✨ AI Assist"}
           </button>
 
           {/* Priority + Due + Category */}
-          <div className="grid grid-cols-3 gap-4 mt-3 ">
+          <div className="grid grid-cols-1  sm:grid-cols-3 gap-4 mt-3 ">
             {/* Priority DROPDOWN */}
             <Select value={priority} onValueChange={setPriority}>
               <SelectTrigger className="p-4 rounded hover:bg-white/10 bg-white/5 border border-white/10 text-sm w-full">
@@ -552,12 +552,7 @@ export default function Dashboard() {
         </div>
 
         <hr className="my-4 border-white/6" />
-        {/* <h4 className="font-semibold mb-3">AI Assistant</h4>
-        <div className="p-4 rounded bg-white/5 mb-4">Hello! I'm your AI assistant. How can I help you today?</div>
-        <div className="flex gap-2 mt-auto">
-          <input className="flex-1 p-3 rounded border border-white/8 bg-white/5" placeholder="Ask me anything..." />
-          <button className="p-3 rounded bg-white/10">➤</button>
-        </div> */}
+
       </aside>
 
       <EditTaskModal open={isEditOpen} onClose={() => setIsEditOpen(false)} task={editTask} onSave={handleSaveEdit} />
