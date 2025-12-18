@@ -1,6 +1,7 @@
 // FILE: src/pages/WeekView.jsx
 import { useEffect, useState } from "react";
 import { getWeekTasks, updateTask, deleteTask } from "../api/tasks";
+import { CheckCircle, RotateCcw, Trash2 } from "lucide-react";
 import { downloadWeek } from "../utils/downloadWeek";
 import api from "../api/axios";
 
@@ -153,40 +154,59 @@ export default function WeekView() {
               weekData[day].map((task) => (
                 <div
                   key={task._id}
-                  className={`p-4 rounded-lg sm:flex items-center justify-between bg-white/10 border border-white/10 mb-3 ${
-                    task.status === "completed" ? "opacity-50 line-through" : ""
-                  }`}
+                  className={`p-4 rounded-xl bg-white/10 border border-white/10 mb-3
+                    transition hover:bg-white/15
+                    ${task.status === "completed" ? "opacity-50 line-through" : ""}
+                  `}
                 >
-                  <p className="font-medium">{task.title}</p>
-
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs capitalize ${
-                        task.priority === "high"
-                          ? "bg-red-500/20 text-red-300"
-                          : task.priority === "medium"
-                          ? "bg-yellow-500/20 text-yellow-300"
-                          : "bg-green-500/20 text-green-300"
-                      }`}
-                    >
-                      {task.priority}
-                    </span>
-
-                    <button
-                      onClick={() => handleStatusToggle(task)}
-                      className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded"
-                    >
-                      {task.status === "completed" ? "Mark Pending" : "Mark Done"}
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(task)}
-                      className="px-2 py-1 bg-red-500/20 text-red-300 rounded"
-                    >
-                      Delete
-                    </button>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  
+                    {/* Title */}
+                    <p className="font-medium">{task.title}</p>
+                  
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      
+                      {/* Priority badge */}
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs capitalize ${
+                          task.priority === "high"
+                            ? "bg-red-500/20 text-red-300"
+                            : task.priority === "medium"
+                            ? "bg-yellow-500/20 text-yellow-300"
+                            : "bg-green-500/20 text-green-300"
+                        }`}
+                      >
+                        {task.priority}
+                      </span>
+                      
+                      {/* Toggle status */}
+                      <button
+                        onClick={() => handleStatusToggle(task)}
+                        title={task.status === "completed" ? "Mark Pending" : "Mark Done"}
+                        className="p-2 rounded-lg bg-blue-500/20 text-blue-300
+                          hover:bg-blue-500/30 active:scale-95 transition"
+                      >
+                        {task.status === "completed" ? (
+                          <RotateCcw size={16} />
+                        ) : (
+                          <CheckCircle size={16} />
+                        )}
+                      </button>
+                      
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDelete(task)}
+                        title="Delete task"
+                        className="p-2 rounded-lg bg-red-500/20 text-red-300
+                          hover:bg-red-500/30 active:scale-95 transition"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
+
               ))
             ) : (
               <p className="text-sm opacity-70">No tasks</p>
