@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import toast from "react-hot-toast";
 import Input from "../components/Input";
 import OTPInput from "../components/OTPInput"; 
 import PasswordInput from "../components/PasswordInput"; 
 import { sendOTP, verifyOTP, resetPasswordAPI } from "../api/auth";
 
+export const showWarning = (msg) =>
+  toast(msg, {
+    icon: "⚠️",
+    style: {
+      background: "#f59e0b",
+      color: "#000",
+    },
+  });
 export default function ForgotPassword() {
   const nav = useNavigate();
 
@@ -91,7 +99,7 @@ export default function ForgotPassword() {
       setCanResend(false);
     } catch (err) {
       console.error("resendOTP error:", err);
-      alert(err.response?.data?.message || "Failed to resend OTP");
+      toast.error(err.response?.data?.message || "Failed to resend OTP");
     } finally {
       setLoading(false);
     }
@@ -103,7 +111,7 @@ export default function ForgotPassword() {
   const handleVerifyOTP = async () => {
     const code = otp.join("");
     if (code.length !== 6) {
-      alert("Please enter the complete 6-digit OTP");
+      showWarning("Please enter the complete 6-digit OTP");
       return;
     }
 
@@ -118,7 +126,7 @@ export default function ForgotPassword() {
       setPasswordError("");
     } catch (err) {
       console.error("verifyOTP error:", err);
-      alert(err.response?.data?.message || "OTP verification failed");
+      toast.error(err.response?.data?.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
@@ -146,7 +154,7 @@ export default function ForgotPassword() {
     try {
       setLoading(true);
       await resetPasswordAPI(email, password);
-      alert("Password reset successful. Please login.");
+      toast.success("Password reset successful. Please login.");;
       nav("/login");
     } catch (err) {
       console.error("resetPassword error:", err);

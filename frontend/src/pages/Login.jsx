@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import Input from "../components/Input";
 import { loginUser, googleLoginUser as apiGoogleLoginUser } from "../api/auth";
 import { GoogleLogin } from "@react-oauth/google";
@@ -26,9 +27,10 @@ export default function Login() {
       const res = await loginUser(form);
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user); // Update user context
+      toast.success("Logged in successfully");
       nav("/"); // Navigate to dashboard
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      toast.error(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -41,10 +43,11 @@ export default function Login() {
       const res = await apiGoogleLoginUser(credentialResponse.credential);
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user); // Update user context
+      toast.success("Logged in with Google");
       nav("/"); // Navigate to dashboard
     } catch (err) {
       console.error("Google login failed:", err);
-      alert("Google Login Failed");
+      toast.error("Google Login Failed");
     } finally {
       setLoading(false);
     }

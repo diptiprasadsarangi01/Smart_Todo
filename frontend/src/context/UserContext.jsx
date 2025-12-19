@@ -5,8 +5,7 @@ export const useUser = () => useContext(UserContext);
 
 // 🔥 Auto-detect API URL (works in dev + production)
 const API_BASE =
-  import.meta.env.VITE_API_URL?.trim() ||
-  "http://localhost:5000"; // fallback
+  import.meta.env.VITE_API_URL?.trim(); // fallback
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);

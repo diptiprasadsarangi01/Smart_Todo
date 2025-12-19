@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
+import toast from "react-hot-toast";
 
 export default function Profile() {
   const { user, updateUser } = useUser();
@@ -24,7 +25,13 @@ const handleImageUpload = (e) => {
 
   // Only allow images
   if (!file.type.startsWith("image/")) {
-    alert("Please upload an image file");
+    toast("Please upload an image file", {
+      icon: "⚠️",
+      style: {
+        background: "#f59e0b",
+        color: "#000",
+      },
+    });
     return;
   }
 
@@ -68,10 +75,10 @@ const handleImageUpload = (e) => {
     try {
       console.log( bio, profilePic);
       const updated = await updateUser({ name, bio, profilePic });
-      if (updated) alert("Profile updated!");
+      if (updated) toast.success("Profile updated successfully");
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Failed to update profile");
+      toast.error("Failed to update profile");
     }
   };
 

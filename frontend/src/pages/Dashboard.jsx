@@ -8,6 +8,7 @@ import {
   HeartPulse,
   Boxes,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "../api/axios";
 import {
   getTodayPendingTasks,
@@ -118,7 +119,10 @@ export default function Dashboard() {
 
   // --- ADD TASK ---
   const handleAdd = async () => {
-    if (!title || !due) return alert("Title & due date required");
+    if (!title || !due) {
+      toast.error("Title & due date required");
+      return;
+    }
 
     try {
       await addTask({
@@ -128,7 +132,7 @@ export default function Dashboard() {
         dueDate: due,
         category,
       });
-
+      toast.success("Task added");
       // refresh lists after add
       const pending = await getTodayPendingTasks();
       const all = await getTodayTasks();
@@ -149,7 +153,7 @@ export default function Dashboard() {
       fetchUrgentHybrid();
     } catch (err) {
       console.error("Add task error:", err);
-      alert(err?.response?.data?.message || "Failed to add task");
+      toast.error(err?.response?.data?.message || "Failed to add task");
     }
   };
 
@@ -205,7 +209,7 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error("AI failed to process task:", err);
-      alert("AI failed to process task");
+      toast.error("AI failed to process task");
     } finally {
       setAiLoading(false);
     }
@@ -213,7 +217,10 @@ export default function Dashboard() {
 
   // Debounced wrapper (simple)
   const handleAIAssist = () => {
-    if (!title && !desc) return alert("Type something in title or description first!");
+    if (!title && !desc) {
+      toast.error("Type something in title or description first!");
+      return;
+    }
 
     // clear existing debounce timer
     if (aiAssistTimer.current) {
@@ -233,6 +240,7 @@ export default function Dashboard() {
     if (!window.confirm("Delete this task?")) return;
     try {
       await deleteTask(id);
+      toast.success("Task deleted");
       setTasks((s) => s.filter((t) => t._id !== id));
       // also refresh analytics/all tasks
       const all = await getTodayTasks();
@@ -241,14 +249,14 @@ export default function Dashboard() {
       fetchUrgentHybrid();
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Delete failed");
+      toast.error("Delete failed");
     }
   };
 
   const handleComplete = async (id) => {
     try {
       await updateTask(id, { status: "completed" });
-
+      toast.success("Task completed ");
       // fade / remove visually
       setTasks((prev) => prev.map((t) => (t._id === id ? { ...t, isFading: true } : t)));
       setTimeout(async () => {
@@ -259,7 +267,7 @@ export default function Dashboard() {
       }, 300);
     } catch (err) {
       console.error("Complete failed:", err);
-      alert("Complete failed");
+      toast.error("Failed to complete task");
     }
   };
 
@@ -271,6 +279,7 @@ export default function Dashboard() {
   const handleSaveEdit = async (payload) => {
     try {
       const updated = await updateTask(editTask._id, payload);
+      toast.success("Task updated");
       setTasks((s) => s.map((t) => (t._id === updated._id ? updated : t)));
       // refresh all tasks for analytics
       const all = await getTodayTasks();
@@ -280,7 +289,8 @@ export default function Dashboard() {
       fetchUrgentHybrid();
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Update failed");
+      toast.error("Failed to update task");
+
     }
   };
 

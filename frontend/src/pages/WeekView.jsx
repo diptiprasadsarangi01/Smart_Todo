@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { getWeekTasks, updateTask, deleteTask } from "../api/tasks";
 import { CheckCircle, RotateCcw, Trash2, X } from "lucide-react";
+import toast from "react-hot-toast";
 import WeeklyAnalytics from "../components/WeeklyAnalytics";
 import { downloadWeek } from "../utils/downloadWeek";
 import api from "../api/axios";
@@ -136,6 +137,7 @@ export default function WeekView() {
   const handleDelete = async (task) => {
     try {
       await deleteTask(task._id);
+      toast.success("Task deleted");
       const day = daysOrder[(new Date(task.dueDate).getDay() + 6) % 7];
 
       setWeekData((prev) => ({
@@ -144,6 +146,7 @@ export default function WeekView() {
       }));
     } catch (err) {
       console.error("Failed to delete task:", err);
+      toast.error("Failed to delete task");
     }
   };
 

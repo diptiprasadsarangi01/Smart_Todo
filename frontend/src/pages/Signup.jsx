@@ -1,9 +1,6 @@
-// ---------------------------
-// SIGNUP WITH PASSWORD STRENGTH + OTP TIMER
-// ---------------------------
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import Input from "../components/Input";
 import OTPInput from "../components/OTPInput";
 import PasswordInput from "../components/PasswordInput";
@@ -112,7 +109,7 @@ const [passwordError, setPasswordError] = useState("");
       await sendOTP(form.email);
       setStep(2);
     } catch {
-      alert("Failed to process email.");
+      toast.error("Failed to process email");
     } finally {
       setCheckingEmail(false);
       setLoading(false);
@@ -135,7 +132,7 @@ const [passwordError, setPasswordError] = useState("");
       setCanResend(false);
     } catch (err) {
       console.error("Resend OTP error:", err);
-      alert("Failed to resend OTP. Please try again.");
+      toast.error("Failed to resend OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -146,7 +143,13 @@ const [passwordError, setPasswordError] = useState("");
   // ---------------------------
   const handleVerifyOTP = async () => {
     if (otp.some((box) => box === "")) {
-      alert("Enter complete OTP");
+      toast("Enter complete OTP", {
+        icon: "⚠️",
+        style: {
+          background: "#f59e0b",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -155,7 +158,7 @@ const [passwordError, setPasswordError] = useState("");
       await verifyOTP(form.email, otp.join(""));
       setStep(3);
     } catch {
-      alert("Invalid OTP");
+      toast.error("Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -166,7 +169,13 @@ const [passwordError, setPasswordError] = useState("");
   // ---------------------------
   const handleSignup = async () => {
     if (strengthScore < 3) {
-      alert("Password is too weak.");
+      toast("Password is too weak", {
+        icon: "⚠️",
+        style: {
+          background: "#f59e0b",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -176,9 +185,10 @@ const [passwordError, setPasswordError] = useState("");
 
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user);
+      toast.success("Account created successfully");
       nav("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Signup failed");
+      toast.error(err.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
@@ -193,9 +203,10 @@ const [passwordError, setPasswordError] = useState("");
       const res = await googleLoginUser(credentialResponse.credential);
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user);
+      toast.success("Signed up with Google");
       nav("/");
     } catch {
-      alert("Google Signup Failed");
+      toast.error("Google Signup Failed");
     } finally {
       setLoading(false);
     }

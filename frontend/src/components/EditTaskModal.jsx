@@ -17,6 +17,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import toast from "react-hot-toast";
 
 export default function EditTaskModal({ open, onClose, task, onSave }) {
   const [title, setTitle] = useState("");
@@ -56,10 +57,28 @@ export default function EditTaskModal({ open, onClose, task, onSave }) {
   if (!open) return null;
 
   const handleSave = () => {
-    if (!title || !due) return alert("Title and due date are required");
-    if (due < minDate) {
-      return alert("Please select today or a future date");
+    if (!title || !due) {
+      toast("Title and due date are required", {
+        icon: "⚠️",
+        style: {
+          background: "#f59e0b",
+          color: "#000",
+        },
+      });
+      return;
     }
+  
+    if (due < minDate) {
+      toast("Please select today or a future date", {
+        icon: "⚠️",
+        style: {
+          background: "#f59e0b",
+          color: "#000",
+        },
+      });
+      return;
+    }
+  
     onSave({
       title,
       description,
