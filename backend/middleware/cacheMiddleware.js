@@ -2,8 +2,6 @@ import redisClient from "../config/redis.js";
 
 export const cacheMiddleware = (keyPrefix) => async (req, res, next) => {
   try {
-    console.log("📦 Cache Middleware");
-
     if (!redisClient) {
       console.warn("⚠ Redis client not initialized");
       return next();
@@ -15,7 +13,7 @@ export const cacheMiddleware = (keyPrefix) => async (req, res, next) => {
     const cachedData = await redisClient.get(cacheKey);
 
     if (cachedData) {
-      console.log("📦 Cache Hit:", cacheKey);
+
       return res.json(JSON.parse(cachedData));
     }
 

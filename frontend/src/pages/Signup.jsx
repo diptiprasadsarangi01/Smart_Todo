@@ -20,29 +20,28 @@ export default function Signup() {
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
-
   const [checkingEmail, setCheckingEmail] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: "",
   });
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [emailError, setEmailError] = useState("");
 
-// In component state
-const [password, setPassword] = useState("");
-const [confirmPassword, setConfirmPassword] = useState("");
-const [passwordError, setPasswordError] = useState("");
+  // Password states
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  // ---------------------------
-  // RESEND OTP TIMER
-  // ---------------------------
+  // OTP resend timer
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
 
+  /* ---------------------------
+     RESEND OTP TIMER
+  --------------------------- */
   useEffect(() => {
     let interval;
 
@@ -63,19 +62,18 @@ const [passwordError, setPasswordError] = useState("");
 
     return () => clearInterval(interval);
   }, [step]);
-  
-  // ---------------------------
-  // HANDLERS
-  // ---------------------------
 
+  /* ---------------------------
+     HANDLERS
+  --------------------------- */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     if (e.target.name === "email") setEmailError("");
   };
 
-  // ---------------------------
-  // STEP 1: SEND OTP
-  // ---------------------------
+  /* ---------------------------
+     STEP 1: SEND OTP
+  --------------------------- */
   const handleSendOTP = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -96,59 +94,44 @@ const [passwordError, setPasswordError] = useState("");
         return;
       }
 
-      if (exists && !hasPassword) {
-        setStep(2);
-        return;
-      }
-
-      // Reset OTP boxes and timer
       setOtp(["", "", "", "", "", ""]);
-      setResendTimer(30);
-      setCanResend(false);
-
       await sendOTP(form.email);
       setStep(2);
     } catch {
-      toast.error("Failed to process email");
+      toast.error("Failed to send OTP");
     } finally {
       setCheckingEmail(false);
       setLoading(false);
     }
   };
 
-  // ---------------------------
-  // RESEND OTP (dedicated handler)
-  // ---------------------------
+  /* ---------------------------
+     RESEND OTP
+  --------------------------- */
   const handleResendOTP = async () => {
     if (!canResend || loading) return;
 
     try {
       setLoading(true);
-      setOtp(["", "", "", "", "", ""]); // clear previous OTP
-
-      await sendOTP(form.email); // resend OTP
-
+      setOtp(["", "", "", "", "", ""]);
+      await sendOTP(form.email);
       setResendTimer(30);
       setCanResend(false);
-    } catch (err) {
-      console.error("Resend OTP error:", err);
-      toast.error("Failed to resend OTP. Please try again.");
+    } catch {
+      toast.error("Failed to resend OTP");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------------------------
-  // STEP 2: VERIFY OTP
-  // ---------------------------
+  /* ---------------------------
+     STEP 2: VERIFY OTP
+  --------------------------- */
   const handleVerifyOTP = async () => {
-    if (otp.some((box) => box === "")) {
+    if (otp.some((o) => o === "")) {
       toast("Enter complete OTP", {
         icon: "⚠️",
-        style: {
-          background: "#f59e0b",
-          color: "#000",
-        },
+        style: { background: "#f59e0b", color: "#000" },
       });
       return;
     }
@@ -164,24 +147,23 @@ const [passwordError, setPasswordError] = useState("");
     }
   };
 
-  // ---------------------------
-  // STEP 3: FINAL SIGNUP
-  // ---------------------------
+  /* ---------------------------
+     STEP 3: FINAL SIGNUP
+  --------------------------- */
   const handleSignup = async () => {
-    if (strengthScore < 3) {
-      toast("Password is too weak", {
-        icon: "⚠️",
-        style: {
-          background: "#f59e0b",
-          color: "#000",
-        },
-      });
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await signupUser(form);
+
+      const res = await signupUser({
+        name: form.name,
+        email: form.email,
+        password, // ✅ correct password
+      });
 
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user);
@@ -194,9 +176,9 @@ const [passwordError, setPasswordError] = useState("");
     }
   };
 
-  // ---------------------------
-  // GOOGLE LOGIN
-  // ---------------------------
+  /* ---------------------------
+     GOOGLE SIGNUP
+  --------------------------- */
   const handleGoogleSignup = async (credentialResponse) => {
     try {
       setLoading(true);
@@ -206,21 +188,23 @@ const [passwordError, setPasswordError] = useState("");
       toast.success("Signed up with Google");
       nav("/");
     } catch {
-      toast.error("Google Signup Failed");
+      toast.error("Google signup failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------------------------
-  // UI
-  // ---------------------------
+  /* ---------------------------
+     UI
+  --------------------------- */
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md p-8 rounded-2xl card-glass shadow-xl border">
-        <h2 className="text-center font-bold mb-2 text-xl">AI Task Manager</h2>
+        <h2 className="text-center font-bold mb-2 text-xl">
+          AI Task Manager
+        </h2>
 
-        {/* TABS */}
+        {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <Link
             to="/login"
@@ -233,19 +217,31 @@ const [passwordError, setPasswordError] = useState("");
           </button>
         </div>
 
-        {/* ----------------- STEP 1 ----------------- */}
+        {/* STEP 1 */}
         {step === 1 && (
           <>
-            <Input label="Full Name" name="name" value={form.name} onChange={handleChange} />
-            <Input label="Email" name="email" value={form.email} onChange={handleChange} />
-            {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+            <Input
+              label="Full Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+            />
+
+            {emailError && (
+              <p className="text-red-500 text-sm">{emailError}</p>
+            )}
 
             <button
               onClick={handleSendOTP}
               disabled={checkingEmail || loading || !form.email}
-              className={`w-full py-3 rounded mt-2 ${
-                checkingEmail || loading ? "bg-white/20 cursor-not-allowed" : "bg-white/10"
-              }`}
+              className="w-full py-3 rounded mt-2 bg-white/10 disabled:opacity-50"
             >
               {checkingEmail
                 ? "Checking..."
@@ -254,12 +250,15 @@ const [passwordError, setPasswordError] = useState("");
                 : "Send OTP"}
             </button>
 
-            <div className="my-4 text-center opacity-80">Or continue with</div>
+            <div className="my-4 text-center opacity-80">
+              Or continue with
+            </div>
+
             <GoogleLogin onSuccess={handleGoogleSignup} />
           </>
         )}
 
-        {/* ----------------- STEP 2 ----------------- */}
+        {/* STEP 2 */}
         {step === 2 && (
           <>
             <p className="text-center mb-3 opacity-80">
@@ -276,11 +275,10 @@ const [passwordError, setPasswordError] = useState("");
               {loading ? "Verifying..." : "Verify OTP"}
             </button>
 
-            {/* RESEND TIMER */}
             <div className="mt-4 text-center">
               {canResend ? (
                 <button
-                  onClick={handleResendOTP} // updated to dedicated handler
+                  onClick={handleResendOTP}
                   className="text-blue-400 underline"
                 >
                   Resend OTP
@@ -288,15 +286,16 @@ const [passwordError, setPasswordError] = useState("");
               ) : (
                 <p className="text-gray-400">
                   Resend OTP in{" "}
-                  <span className="font-semibold">{resendTimer}s</span>
+                  <span className="font-semibold">
+                    {resendTimer}s
+                  </span>
                 </p>
               )}
             </div>
           </>
         )}
 
-        {/* ----------------- STEP 3 ----------------- */}
-
+        {/* STEP 3 */}
         {step === 3 && (
           <>
             <PasswordInput
@@ -310,7 +309,11 @@ const [passwordError, setPasswordError] = useState("");
 
             <button
               onClick={handleSignup}
-              disabled={passwordError || password.length === 0}
+              disabled={
+                Boolean(passwordError) ||
+                password.length === 0 ||
+                loading
+              }
               className="w-full py-3 rounded bg-white/10 mt-2 disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Finish Signup"}
@@ -321,3 +324,4 @@ const [passwordError, setPasswordError] = useState("");
     </div>
   );
 }
+

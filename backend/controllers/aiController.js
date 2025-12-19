@@ -6,7 +6,7 @@ dotenv.config();
 const client = new GoogleGenAI({
   apiKey: process.env.AI_API_KEY,
 });
-const MODEL = process.env.AI_MODEL || "gemini-2.5-flash-lite";
+const MODEL = process.env.AI_MODEL ;
 /* =======================================================
    AI — Process Task (Generate title, desc, priority, category)
 ======================================================= */
