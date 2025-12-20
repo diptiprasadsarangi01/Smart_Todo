@@ -1,3 +1,4 @@
+// config/redis.js
 import { createClient } from "redis";
 
 let redisClient;
@@ -5,26 +6,23 @@ let redisClient;
 export const connectRedis = async () => {
   try {
     redisClient = createClient({
-      socket: {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT
-      },
-      password: process.env.REDIS_PASSWORD
+      url: process.env.REDIS_URL,
     });
 
-    redisClient.on("connect", () =>
-      console.log("Redis Connected Successfully")
-    );
+    redisClient.on("connect", () => {
+      console.log("✅ Redis connected");
+    });
 
-    redisClient.on("error", (err) =>
-      console.error("Redis Error:", err)
-    );
+    redisClient.on("error", (err) => {
+      console.error("❌ Redis error:", err);
+    });
 
     await redisClient.connect();
+
+    return redisClient;
   } catch (err) {
-    console.error("Redis Connection Failed:", err);
+    console.error("❌ Redis connection failed:", err);
   }
 };
 
-// ✅ Default export so you can import redisClient directly
-export default redisClient;
+export  const getRedisClient = () => redisClient;
