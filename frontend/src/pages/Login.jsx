@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import textlogo from "../assets/donevia_logo_text.png"
 import Input from "../components/Input";
 import { loginUser, googleLoginUser as apiGoogleLoginUser } from "../api/auth";
 import { GoogleLogin } from "@react-oauth/google";
@@ -56,8 +57,8 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md p-8 rounded-2xl card-glass shadow-xl border">
+        <img src={textlogo} alt="" className="m-auto  h-14"/>
 
-        <h2 className="text-center font-bold mb-2">AI Task Manager</h2>
         <p className="text-center text-sm opacity-80 mb-6">
           Manage tasks intelligently
         </p>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import textlogo from "../assets/donevia_logo_text.png"
 import toast from "react-hot-toast";
 import Input from "../components/Input";
 import OTPInput from "../components/OTPInput";
@@ -200,9 +201,10 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md p-8 rounded-2xl card-glass shadow-xl border">
-        <h2 className="text-center font-bold mb-2 text-xl">
-          AI Task Manager
-        </h2>
+        <img src={textlogo} alt="" className="m-auto  h-14"/>
+        <p className="text-center text-sm opacity-80 mb-6">
+          Manage tasks intelligently
+        </p>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">

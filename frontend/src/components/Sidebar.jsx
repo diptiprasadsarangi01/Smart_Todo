@@ -1,5 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import logo from "../assets/logo.png"
+import textlogo from "../assets/donevia_logo_text.png"
 import {
   LayoutGrid,
   CalendarDays,
@@ -45,14 +47,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       {/* Branding */}
       <div className="flex items-center gap-3 h-20 mb-6 overflow-hidden">
-        <div className="ml-3 w-9 h-9 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-          ✦
-        </div>
-
+        {collapsed && (
+          <img src={logo} alt="" className=" w-14 h-14 mt-2 flex items-center justify-center " />
+        )}
         {!collapsed && (
-          <h3 className="font-semibold text-white tracking-wide">
-            AI Task Manager
-          </h3>
+          <img src={textlogo} alt="" className="mt-6 ml-2 h-16 flex items-center justify-center "/>
         )}
       </div>
 
@@ -98,11 +97,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         ))}
       </nav>
 
-      {!collapsed && (
-        <div className="mt-6 text-xs text-white/60 text-center">
-          v0.1
-        </div>
-      )}
+
     </div>
   );
 }
